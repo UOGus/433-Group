@@ -1,0 +1,26 @@
+services:
+    server:
+      container_name: server-10.9.0.5
+      build:
+        context: ./server/docker/
+        dockerfile: Dockerfile
+      cap_add:
+                - ALL
+      privileged: true
+      networks:
+        net-10.9.0.0:
+          ipv4_address: 10.9.0.5
+      tty: true
+      volumes:
+              - ./server:/server
+
+networks:
+    net-10.9.0.0:
+        name: net-10.9.0.0
+        ipam:
+            config:
+                - subnet: 10.9.0.0/24         #10.9.0.1 to 10.9.0.254 254 usable addresses
+
+
+
+    
