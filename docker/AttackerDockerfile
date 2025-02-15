@@ -9,3 +9,6 @@ COPY ./packages.txt /attacker/
 # Install dependencies from the packages.txt
 RUN pip install -r /attacker/packages.txt
 
+RUN apt update
+RUN apt install -y iputils-ping
+

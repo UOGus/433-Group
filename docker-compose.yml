@@ -11,6 +11,8 @@ services:
         net-10.9.0.0:
           ipv4_address: 10.9.0.5
       tty: true
+      sysctls:
+              - net.ipv4.tcp_syncookies=0      
       volumes:
               - ./server:/server
 
