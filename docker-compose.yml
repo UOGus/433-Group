@@ -24,12 +24,10 @@ services:
       cap_add:
                 - ALL
       privileged: true
-      networks:
-        net-10.9.0.0:
-          ipv4_address: 10.9.0.6
       tty: true
       volumes:
               - ./attacker:/attacker
+      network_mode: host
 
     user:
       container_name: user-10.9.0.7
