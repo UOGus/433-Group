@@ -15,9 +15,11 @@ services:
               - net.ipv4.tcp_syncookies=0      
       volumes:
               - ./server:/server
+      ports:
+      - "8080:8080"
 
     attacker:
-      container_name: attacker-10.9.0.6
+      container_name: attacker
       build:
         context: ./attacker
         dockerfile: ../docker/AttackerDockerfile
@@ -36,6 +38,7 @@ services:
         net-10.9.0.0:
           ipv4_address: 10.9.0.7
       tty: true
+
 
 
 networks:
