@@ -8,6 +8,11 @@ COPY ./packages.txt /server/
 
 # Install dependencies from the packages.txt
 RUN pip install -r /server/packages.txt
+RUN apt update
+RUN apt install -y iputils-ping
+RUN apt install -y net-tools
+RUN apt install -y tcpdump
+RUN apt install -y iproute2
 
 # Run the server
 CMD ["python", "/server/server.py"]
