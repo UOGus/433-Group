@@ -8,17 +8,12 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *pa
 
     if (ntohs(eth->ether_type) == 0x0800) { // 0x0800 is IP type
         struct ipheader *ip = (struct ipheader *)(packet + sizeof(struct ethheader));
-        
+
         switch(ip->iph_protocol) {
             case IPPROTO_TCP:
-                printf("%s\n", inet_ntoa(ip->iph_sourceip));
-                // const u_char *payload = packet + sizeof(struct ethheader) + sizeof(struct ipheader);
-                // int payload_size = header->len - (payload - packet); 
-                // printf("   Protocol: TCP\n");
+                struct tcpheader *tcp = (struct tcpheader *)(packet + sizeof(struct ethheader) + sizeof(struct ipheader));
 
-                // for(int i = 0; i < payload_size; i++){
-                //     printf("%c", payload[i]);
-                // }
+                printf("%u\n", ntohs(tcp->tcp_sport));
 
                 return;
             case IPPROTO_UDP:

@@ -22,3 +22,26 @@ struct ipheader {
   struct  in_addr    iph_sourceip; //Source IP address
   struct  in_addr    iph_destip;   //Destination IP address
 };
+
+// TCP Header
+struct tcpheader {
+    u_short tcp_sport;               
+    u_short tcp_dport;               
+    u_int   tcp_seq;               
+    u_int   tcp_ack;                 
+    u_char  tcp_offx2;
+    #define TH_OFF(th) (((th)->tcp_offx2 & 0xf0) >> 4)
+    u_char  tcp_flags;
+    #define TH_FIN  0x01
+    #define TH_SYN  0x02
+    #define TH_RST  0x04
+    #define TH_PUSH 0x08
+    #define TH_ACK  0x10
+    #define TH_URG  0x20
+    #define TH_ECE  0x40
+    #define TH_CWR  0x80
+    #define TH_FLAGS (TH_FIN|TH_SYN|TH_RST|TH_ACK|TH_URG|TH_ECE|TH_CWR)
+    u_short tcp_win;              
+    u_short tcp_sum;               
+    u_short tcp_urp;
+};
