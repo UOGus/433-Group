@@ -9,7 +9,7 @@ tcp = TCP(dport=8080, flags='S')
 pkt = ip/tcp
 
 while True:
-    pkt[IP].src    = "10.9.0.1"
+    pkt[IP].src    = "1.2.3.4"
     pkt[TCP].sport = getrandbits(16)
     pkt[TCP].seq   = getrandbits(32)
     pkt.show()
