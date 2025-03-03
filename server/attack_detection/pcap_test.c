@@ -21,7 +21,7 @@ bpf_u_int32 net;
 // Students need to change "eth3" to the name found on their own
 // machines (using ifconfig). The interface to the 10.9.0.0/24
 // network has a prefix "br-" (if the container setup is used).
-handle = pcap_open_live("eth3", BUFSIZ, 1, 1000, errbuf);
+handle = pcap_open_live("eth0", BUFSIZ, 1, 1000, errbuf);
 // Step 2: Compile filter_exp into BPF psuedo-code
 pcap_compile(handle, &fp, filter_exp, 0, net);
 if (pcap_setfilter(handle, &fp) !=0) {
