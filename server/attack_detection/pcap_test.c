@@ -1,11 +1,11 @@
-#include <pcap.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include "packet_structs.h"
 
 /* This function will be invoked by pcap for each captured packet.
 We can process each packet inside the function.
 */
-void got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *u_charpacket){
+void got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *packet){
     printf("Got a packet\n");
 }
 
