@@ -1,6 +1,35 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "packet_structs.h"
+#include <time.h>
+
+int tcp_syn_attempts = 0;
+time_t last_time;
+int interval; 
+
+
+void check_syn_attempts(time_t *last_time) {
+    time_t current_time = time(NULL);
+    if (difftime(current_time, *last_time) >= interval) {
+        printf("SYN Attempts in the last %d seconds: %d\n", interval,tcp_syn_attempts);
+        tcp_syn_attempts = 0; 
+        *last_time = current_time;  
+    }
+}
+
+
+void print_tcp_flags(struct tcpheader *tcp) {
+    printf("TCP Flags: ");
+    if (tcp->tcp_flags & TH_FIN)  printf("FIN ");
+    if (tcp->tcp_flags & TH_SYN)  printf("SYN ");
+    if (tcp->tcp_flags & TH_RST)  printf("RST ");
+    if (tcp->tcp_flags & TH_PUSH) printf("PSH ");
+    if (tcp->tcp_flags & TH_ACK)  printf("ACK ");
+    if (tcp->tcp_flags & TH_URG)  printf("URG ");
+    if (tcp->tcp_flags & TH_ECE)  printf("ECE ");
+    if (tcp->tcp_flags & TH_CWR)  printf("CWR ");
+    printf("\n");
+}
 
 //pcap handler
 void got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *packet){
@@ -13,7 +42,11 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *pa
             case IPPROTO_TCP:
                 struct tcpheader *tcp = (struct tcpheader *)(packet + sizeof(struct ethheader) + sizeof(struct ipheader));
 
-                printf("%u\n", ntohs(tcp->tcp_sport));
+                //print_tcp_flags(tcp);
+
+                tcp_syn_attempts++;
+
+                check_syn_attempts(&last_time);
 
                 return;
             case IPPROTO_UDP:
@@ -30,11 +63,24 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *pa
     
 }
 
-int main(){
+int main(int argc, char *argv[]){
+    if(argc == 2){
+        interval = atoi(argv[1]);
+    }
+    else if(argc > 2){
+        printf("Error Usage: ./attack_detection <interval> \nor default to 60 sec interval with no arg\n");
+        return 1;
+    }
+    else{
+        interval = 60;
+    }
+
     pcap_t *handle;
     char errbuf[PCAP_ERRBUF_SIZE];
     struct bpf_program fp;
-    char filter_exp[] = "tcp";
+    // filter for packets with just tcp syn flag
+    // SYN flag in the TCP header has a bit value of 0x02 (binary 00000010)
+    char filter_exp[] = "tcp[tcpflags] == 2";
     bpf_u_int32 net;
 
     handle = pcap_open_live("eth0", BUFSIZ, 1, 1000, errbuf);
@@ -45,8 +91,12 @@ int main(){
         exit(EXIT_FAILURE);
     }
 
+    last_time = time(NULL);
+
     pcap_loop(handle, -1, got_packet, NULL);
     pcap_close(handle);
     return 0;
 }
+
+// need to compile with flag -lpcap
 
