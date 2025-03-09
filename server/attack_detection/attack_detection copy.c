@@ -1,13 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <time.h>
 #include "packet_structs.h"
-#include "adaptive_threshold.h"
-
+#include <time.h>
 
 int tcp_syn_attempts = 0;
-// estimated weighted moving average of syn packets 
-double average = 0.0;
 time_t last_time;
 int interval; 
 
@@ -47,17 +43,10 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *pa
                 struct tcpheader *tcp = (struct tcpheader *)(packet + sizeof(struct ethheader) + sizeof(struct ipheader));
 
                 //print_tcp_flags(tcp);
-
+                
                 tcp_syn_attempts++;
 
-                // checks if the time interval has passed 
-                // we will call both detection algorithms in this if statement
-                if(check_time_interval(&last_time)){
-                    average = adaptive_threshold_algorithm(average, tcp_syn_attempts);
-                    printf("Average: %f\n", average);
-                    // reset count of syn attempts for the time interval
-                    tcp_syn_attempts = 0; 
-                }
+                check_syn_attempts(&last_time);
 
                 return;
             case IPPROTO_UDP:
