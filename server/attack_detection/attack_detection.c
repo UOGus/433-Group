@@ -12,13 +12,15 @@ time_t last_time;
 int interval; 
 
 
-void check_syn_attempts(time_t *last_time) {
+int check_time_interval(time_t *last_time) {
     time_t current_time = time(NULL);
     if (difftime(current_time, *last_time) >= interval) {
         printf("SYN Attempts in the last %d seconds: %d\n", interval,tcp_syn_attempts);
-        tcp_syn_attempts = 0; 
         *last_time = current_time;  
+        return 1;
     }
+
+    return 0;
 }
 
 
