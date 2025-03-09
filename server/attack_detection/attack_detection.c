@@ -8,13 +8,14 @@ time_t last_time;
 int interval; 
 
 
-void check_syn_attempts(time_t *last_time) {
+int check_time_interval(time_t *last_time) {
     time_t current_time = time(NULL);
     if (difftime(current_time, *last_time) >= interval) {
         printf("SYN Attempts in the last %d seconds: %d\n", interval,tcp_syn_attempts);
-        tcp_syn_attempts = 0; 
         *last_time = current_time;  
+        return 1;
     }
+    return 0;
 }
 
 
@@ -43,10 +44,16 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *pa
                 struct tcpheader *tcp = (struct tcpheader *)(packet + sizeof(struct ethheader) + sizeof(struct ipheader));
 
                 //print_tcp_flags(tcp);
-
+                
                 tcp_syn_attempts++;
 
-                check_syn_attempts(&last_time);
+                // checks if the time interval has passed 
+                // we will call both detection algorithms in this if statement
+                if(check_time_interval(&last_time)){
+                    
+                    // reset count of syn attempts for the time interval
+                    tcp_syn_attempts = 0; 
+                }
 
                 return;
             case IPPROTO_UDP:
