@@ -3,8 +3,8 @@ import { sleep } from 'k6'
 
 export const options = {
     discardResponseBodies: true,
-    vus: 3,
-    duration: "10s",
+    vus: 5,
+    duration: "60s",
   };
 
 export default function() {
