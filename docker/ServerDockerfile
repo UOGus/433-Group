@@ -13,6 +13,9 @@ RUN apt install -y iputils-ping
 RUN apt install -y net-tools
 RUN apt install -y tcpdump
 RUN apt install -y iproute2
+RUN apt install -y libpcap-dev
+RUN apt install nftables -y
+RUN apt install systemd -y
 
 # Run the server
 CMD ["python", "/server/server.py"]

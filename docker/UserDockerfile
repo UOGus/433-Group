@@ -1,0 +1,7 @@
+FROM grafana/k6:latest
+
+WORKDIR /user
+
+COPY ./user_traffic_script.js /user/
+
+CMD ["run", "user_traffic_script.js"]

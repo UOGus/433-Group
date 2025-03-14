@@ -32,12 +32,17 @@ services:
       network_mode: host
 
     user:
-      container_name: user-10.9.0.7
-      image: python:3.13.1
-      networks:
-        net-10.9.0.0:
-          ipv4_address: 10.9.0.7
+      container_name: user
+      build:
+        context: ./user
+        dockerfile: ../docker/UserDockerfile
+      cap_add:
+                - ALL
+      privileged: true
       tty: true
+      volumes:
+              - ./user:/user
+      network_mode: host
 
 
 

@@ -1,13 +1,12 @@
 #include <pcap.h>
 
-//Ethernet header
 struct ethheader {
     unsigned char  ether_dhost[6];
     unsigned char  ether_shost[6];
     unsigned short ether_type;
 };
 
-// IP Header
+
 struct ipheader {
   unsigned char      iph_ihl:4, //IP header length
                      iph_ver:4; //IP version
@@ -23,7 +22,6 @@ struct ipheader {
   struct  in_addr    iph_destip;   //Destination IP address
 };
 
-// TCP Header
 struct tcpheader {
     u_short tcp_sport;               
     u_short tcp_dport;               
@@ -44,4 +42,14 @@ struct tcpheader {
     u_short tcp_win;              
     u_short tcp_sum;               
     u_short tcp_urp;
+};
+
+struct pseudo_tcp
+{
+        unsigned saddr, daddr; // src and dst address 
+        unsigned char mbz;  // field always set to zero just here to alignment of the struct in terms of bytes 
+        unsigned char ptcl; // protocol tcp
+        unsigned short tcpl;  // tcp length of header and payload
+        struct tcpheader tcp; // actually tcp header 
+        char payload[1500]; 
 };
