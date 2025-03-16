@@ -1,0 +1,1 @@
+double cusum(double *last_sum, double syn_attempts, double average);
