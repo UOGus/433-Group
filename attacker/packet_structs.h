@@ -46,10 +46,10 @@ struct tcpheader {
 
 struct pseudo_tcp
 {
-        unsigned saddr, daddr;
-        unsigned char mbz;
-        unsigned char ptcl;
-        unsigned short tcpl;
-        struct tcpheader tcp;
-        char payload[1500];
+        unsigned saddr, daddr; // src and dst address 
+        unsigned char mbz;  // field always set to zero just here to alignment of the struct in terms of bytes 
+        unsigned char ptcl; // protocol tcp
+        unsigned short tcpl;  // tcp length of header and payload
+        struct tcpheader tcp; // actually tcp header 
+        char payload[1500]; 
 };

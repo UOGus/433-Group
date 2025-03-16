@@ -1,3 +1,5 @@
+//Credit for checksum function and headerfile line 92-112 from seed labs
+//
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -15,7 +17,7 @@
 unsigned short calculate_tcp_checksum(struct ipheader *ip);
 
 // send a packet must be sent on a raw socket to directly modify headers
-void send_raw_ip_packet(struct ipheader* ip)
+void send_raw_packet(struct ipheader* ip)
 {
     struct sockaddr_in dest_info;
     int enable = 1;
@@ -80,7 +82,7 @@ int main(int argc, char *argv[]) {
     // checksum for tcp
      tcp->tcp_sum = calculate_tcp_checksum(ip);
 
-     send_raw_ip_packet(ip);
+     send_raw_packet(ip);
    }
 
    return 0;
