@@ -4,6 +4,7 @@
 #include "packet_structs.h"
 #include "adaptive_threshold.h"
 
+FILE *csv_file;
 
 int tcp_syn_attempts = 0;
 // estimated weighted moving average of syn packets 
@@ -37,7 +38,8 @@ void print_tcp_flags(struct tcpheader *tcp) {
 }
 
 //pcap handler
-void got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *packet){
+void got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *packet)
+{
     struct ethheader *eth = (struct ethheader *)packet;
 
     if (ntohs(eth->ether_type) == 0x0800) { // 0x0800 is IP type
@@ -54,7 +56,13 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *pa
                 // checks if the time interval has passed 
                 // we will call both detection algorithms in this if statement
                 if(check_time_interval(&last_time)){
-                    average = adaptive_threshold_algorithm(average, tcp_syn_attempts);
+                    
+                    //average = adaptive_threshold_algorithm(average, tcp_syn_attempts);
+                    struct AdaptiveResult result= adaptive_threshold_algorithm(average, tcp_syn_attempts);
+                average = result.average;
+                fprintf(csv_file, "%d,%.2f,%d\n", interval++, result.average, result.alarm);
+                fflush(csv_file);
+                printf("Writing data to CSV: Average = %f, Alarm = %d\n", result.average, result.alarm);
                     printf("Average: %f\n", average);
                     // reset count of syn attempts for the time interval
                     tcp_syn_attempts = 0; 
@@ -86,6 +94,16 @@ int main(int argc, char *argv[]){
     else{
         interval = 60;
     }
+    csv_file = fopen("data.csv", "w");
+    if (csv_file == NULL) {
+        perror("Error opening CSV file");
+        return 1;
+    }
+    else{
+        printf("OPENNNNNNN");
+    }
+    fprintf(csv_file, "Interval,Average,Alarm\n");
+
 
     pcap_t *handle;
     char errbuf[PCAP_ERRBUF_SIZE];
