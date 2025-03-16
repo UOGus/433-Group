@@ -63,7 +63,7 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *pa
                     average = adaptive_threshold_algorithm(average, tcp_syn_attempts);
                     printf("Average: %f\n", average);
                     sum = cusum(&last_sum, tcp_syn_attempts, average);
-                    if(sum > control){printf("change point detected sum: %f\n", sum);} else {printf("sum: %f\n", sum);}
+                    if(sum > control){printf("Anomaly detected");}
                     // reset count of syn attempts for the time interval
                     tcp_syn_attempts = 0; 
                 }
