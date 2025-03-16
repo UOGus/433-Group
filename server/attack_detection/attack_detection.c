@@ -3,6 +3,7 @@
 #include <time.h>
 #include "packet_structs.h"
 #include "adaptive_threshold.h"
+#include "cusum.h"
 
 
 int tcp_syn_attempts = 0;
@@ -40,6 +41,11 @@ void print_tcp_flags(struct tcpheader *tcp) {
 void got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *packet){
     struct ethheader *eth = (struct ethheader *)packet;
 
+    //CUSUM params
+    double sum = 0.0;
+    double last_sum = 0.0;
+    double control = 40.0;  
+
     if (ntohs(eth->ether_type) == 0x0800) { // 0x0800 is IP type
         struct ipheader *ip = (struct ipheader *)(packet + sizeof(struct ethheader));
 
@@ -56,6 +62,8 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *pa
                 if(check_time_interval(&last_time)){
                     average = adaptive_threshold_algorithm(average, tcp_syn_attempts);
                     printf("Average: %f\n", average);
+                    sum = cusum(&last_sum, tcp_syn_attempts, average);
+                    if(sum > control){printf("change point detected sum: %f\n", sum);} else {printf("sum: %f\n", sum);}
                     // reset count of syn attempts for the time interval
                     tcp_syn_attempts = 0; 
                 }
