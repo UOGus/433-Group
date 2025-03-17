@@ -57,17 +57,6 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *pa
 
                 tcp_syn_attempts++;
 
-<<<<<<< HEAD
-                // checks if the time interval has passed 
-                // we will call both detection algorithms in this if statement
-                if(check_time_interval(&last_time)){
-                    average = adaptive_threshold_algorithm(average, tcp_syn_attempts);
-                    printf("Average: %f\n", average);
-                    sum = cusum(&last_sum, tcp_syn_attempts, average);
-                    if(sum > control){printf("Anomaly detected");}
-                    // reset count of syn attempts for the time interval
-                    tcp_syn_attempts = 0; 
-=======
                 if (check_time_interval(&last_time)) {
                     // Apply Adaptive Threshold algorithm
                     struct AdaptiveResult result = adaptive_threshold_algorithm(average, tcp_syn_attempts);
@@ -87,7 +76,6 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *pa
 
                     // Print data to console (for debugging/monitoring purposes)
                     printf("Interval: %d, Adaptive Avg: %.2f, Alarm: %d, CUSUM: %.2f\n", interval, result.average, alarm, sum);
->>>>>>> b5a248029ce2c14cc4e1b8d9cb13215da2bbe2c3
                 }
 
                 return;
