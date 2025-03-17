@@ -12,20 +12,28 @@
 #define beta 0.9
 
 
-double adaptive_threshold_algorithm(double past_average, int syn_packets){
+
+
+struct AdaptiveResult adaptive_threshold_algorithm(double past_average, int syn_packets){
+    struct AdaptiveResult result;
+    
     // if average is 0.0 (i.e. first time function is called) set it to a default baseline for traffic
     if(past_average == 0.0){
-        return (double)syn_packets;
+        result.average = (double)syn_packets;
+        result.alarm = 0;
+        return result;
+        
     }
 
-    if(adaptive_threshold_check(past_average, syn_packets)){
+result.alarm = adaptive_threshold_check(past_average, syn_packets);
+    if (result.alarm) {
         printf("ALARM RAISED: Syn flood detected with adaptive threshold algorithm!!\n");
     }
-    
-    // return the ewma for this interval so it can be used in the next interval
-    return compute_ewma(past_average, syn_packets);
-}
 
+    // return the ewma for this interval so it can be used in the next interval
+    result.average = compute_ewma(past_average, syn_packets);
+    return result;
+}
 int adaptive_threshold_check(double past_average, int syn_packets){
     return syn_packets >= (alpha + 1) * past_average;
 }

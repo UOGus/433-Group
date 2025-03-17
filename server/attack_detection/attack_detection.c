@@ -5,24 +5,25 @@
 #include "adaptive_threshold.h"
 #include "cusum.h"
 
+FILE *csv_file;  // Global pointer for CSV file
 
 int tcp_syn_attempts = 0;
-// estimated weighted moving average of syn packets 
 double average = 0.0;
 time_t last_time;
-int interval; 
+int interval;
+int _adaptive_thershold_thershold;
 
+double last_sum = 0.0;  // For CUSUM calculation
+double control = 40.0;  // For CUSUM detection
 
 int check_time_interval(time_t *last_time) {
     time_t current_time = time(NULL);
     if (difftime(current_time, *last_time) >= interval) {
-        printf("SYN Attempts in the last %d seconds: %d\n", interval,tcp_syn_attempts);
         *last_time = current_time;  
         return 1;
     }
     return 0;
 }
-
 
 void print_tcp_flags(struct tcpheader *tcp) {
     printf("TCP Flags: ");
@@ -37,8 +38,9 @@ void print_tcp_flags(struct tcpheader *tcp) {
     printf("\n");
 }
 
-//pcap handler
-void got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *packet){
+// PCAP packet handler
+void got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *packet)
+{
     struct ethheader *eth = (struct ethheader *)packet;
 
     //CUSUM params
@@ -53,19 +55,27 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *pa
             case IPPROTO_TCP:
                 struct tcpheader *tcp = (struct tcpheader *)(packet + sizeof(struct ethheader) + sizeof(struct ipheader));
 
-                //print_tcp_flags(tcp);
-                
                 tcp_syn_attempts++;
 
-                // checks if the time interval has passed 
-                // we will call both detection algorithms in this if statement
-                if(check_time_interval(&last_time)){
-                    average = adaptive_threshold_algorithm(average, tcp_syn_attempts);
-                    printf("Average: %f\n", average);
-                    sum = cusum(&last_sum, tcp_syn_attempts, average);
-                    if(sum > control){printf("Anomaly detected");}
-                    // reset count of syn attempts for the time interval
-                    tcp_syn_attempts = 0; 
+                if (check_time_interval(&last_time)) {
+                    // Apply Adaptive Threshold algorithm
+                    struct AdaptiveResult result = adaptive_threshold_algorithm(average, tcp_syn_attempts);
+                    average = result.average;
+                    //_adaptive_thershold_thershold=
+
+                    // Apply CUSUM algorithm
+                    double sum = cusum(&last_sum, tcp_syn_attempts, average);
+                    int alarm = (sum > control) ? 1 : 0;  // Detect anomaly if sum > control
+
+                    // Write results to CSV
+                    fprintf(csv_file, "%d,%.2f,%d,%.2f,%d\n", interval++, result.average, alarm, sum, tcp_syn_attempts);
+                    fflush(csv_file);  // Ensure the data is written to the file
+
+                    // Reset the count of syn attempts for the time interval
+                    tcp_syn_attempts = 0;
+
+                    // Print data to console (for debugging/monitoring purposes)
+                    printf("Interval: %d, Adaptive Avg: %.2f, Alarm: %d, CUSUM: %.2f\n", interval, result.average, alarm, sum);
                 }
 
                 return;
@@ -80,10 +90,9 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *pa
                 return;
         }
     }
-    
 }
 
-int main(int argc, char *argv[]){
+int main(int argc, char *argv[]) {
     if(argc == 2){
         interval = atoi(argv[1]);
     }
@@ -95,12 +104,21 @@ int main(int argc, char *argv[]){
         interval = 60;
     }
 
+    // Open CSV file to write the results
+    csv_file = fopen("data.csv", "w");
+    if (csv_file == NULL) {
+        perror("Error opening CSV file");
+        return 1;
+    }
+
+    // Write CSV header
+    fprintf(csv_file, "Interval,Average,Alarm,CUSUM\n");
+
+    // Initialize pcap
     pcap_t *handle;
     char errbuf[PCAP_ERRBUF_SIZE];
     struct bpf_program fp;
-    // filter for packets with just tcp syn flag
-    // SYN flag in the TCP header has a bit value of 0x02 (binary 00000010)
-    char filter_exp[] = "tcp[tcpflags] == 2";
+    char filter_exp[] = "tcp[tcpflags] == 2";  // Filter for TCP SYN packets
     bpf_u_int32 net;
 
     handle = pcap_open_live("eth0", BUFSIZ, 1, 1000, errbuf);
@@ -115,8 +133,9 @@ int main(int argc, char *argv[]){
 
     pcap_loop(handle, -1, got_packet, NULL);
     pcap_close(handle);
+
+    // Close the CSV file at the end of the program
+    fclose(csv_file);
+
     return 0;
 }
-
-// need to compile with flag -lpcap
-
