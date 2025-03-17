@@ -1,0 +1,25 @@
+import iptc
+
+
+def add_iptables_rule(chain_name: str, src: str = None, dst: str = None, target: str = "ACCEPT"):
+    """
+    Adds a rule to the specified iptables chain.
+    
+    :param chain_name: The name of the chain (e.g., "INPUT", "OUTPUT", "FORWARD")
+    :param src: Source IP address (optional)
+    :param dst: Destination IP address (optional)
+    :param target: Target action (e.g., "ACCEPT", "DROP", "REJECT")
+    """
+    table = iptc.Table(iptc.Table.FILTER)
+    chain = iptc.Chain(table, chain_name)
+    
+    rule = iptc.Rule()
+    if src:
+        rule.src = src
+    if dst:
+        rule.dst = dst
+    
+    rule.target = iptc.Target(rule, target)
+    
+    chain.insert_rule(rule)
+    print(f"Rule added to {chain_name}: {src or 'ANY'} -> {dst or 'ANY'} [{target}]")
