@@ -11,6 +11,7 @@ int tcp_syn_attempts = 0;
 double average = 0.0;
 time_t last_time;
 int interval;
+int interval_count=1;
 int _adaptive_thershold_thershold;
 
 double last_sum = 0.0;  // For CUSUM calculation
@@ -68,14 +69,14 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *pa
                     int alarm = (sum > control) ? 1 : 0;  // Detect anomaly if sum > control
 
                     // Write results to CSV
-                    fprintf(csv_file, "%d,%.2f,%d,%.2f,%d\n", interval++, result.average, alarm, sum, tcp_syn_attempts);
+                    fprintf(csv_file, "%d,%.2f,%d,%.2f,%d\n", interval_count++, result.average, alarm, sum, tcp_syn_attempts);
                     fflush(csv_file);  // Ensure the data is written to the file
 
                     // Reset the count of syn attempts for the time interval
                     tcp_syn_attempts = 0;
 
                     // Print data to console (for debugging/monitoring purposes)
-                    printf("Interval: %d, Adaptive Avg: %.2f, Alarm: %d, CUSUM: %.2f\n", interval, result.average, alarm, sum);
+                    printf("Interval: %d, Adaptive Avg: %.2f, Alarm: %d, CUSUM: %.2f\n", interval_count-1, result.average, alarm, sum);
                 }
 
                 return;
